@@ -27,7 +27,6 @@ const AdminPage = () => {
     const { data, error } = await supabase
       .from('aid_posts')
       .select('*')
-      .eq('is_approved', false)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -57,6 +56,32 @@ const AdminPage = () => {
 
     if (error) {
       console.error('Error approving post:', error);
+    } else {
+      fetchPosts();
+    }
+  };
+
+  const handleDisapprove = async (postId) => {
+    const { error } = await supabase
+      .from('aid_posts')
+      .update({ is_approved: false })
+      .eq('id', postId);
+
+    if (error) {
+      console.error('Error disapproving post:', error);
+    } else {
+      fetchPosts();
+    }
+  };
+
+  const handleDelete = async (postId) => {
+    const { error } = await supabase
+      .from('aid_posts')
+      .delete()
+      .eq('id', postId);
+
+    if (error) {
+      console.error('Error deleting post:', error);
     } else {
       fetchPosts();
     }
@@ -114,13 +139,34 @@ const AdminPage = () => {
                     <Typography color="textSecondary">
                       {post.is_providing ? 'Providing Aid' : 'Requesting Aid'}
                     </Typography>
+                    
+                    {post.is_approved ? (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => handleDisapprove(post.id)}
+                        sx={{ mt: 2, mr: 2 }}
+                      >
+                        Disapprove
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleApprove(post.id)}
+                        sx={{ mt: 2, mr: 2 }}
+                      >
+                        Approve
+                      </Button>
+                    )}
+                    
                     <Button
                       variant="contained"
-                      color="primary"
-                      onClick={() => handleApprove(post.id)}
+                      color="error"
+                      onClick={() => handleDelete(post.id)}
                       sx={{ mt: 2 }}
                     >
-                      Approve
+                      Delete
                     </Button>
                   </CardContent>
                 </Card>
