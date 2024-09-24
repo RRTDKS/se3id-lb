@@ -9,7 +9,7 @@ import {
   Card, CardContent, IconButton, List, ListItem, ListItemText,
   Fab, Dialog, DialogTitle, DialogContent, DialogActions,
   Chip, OutlinedInput, Grid, Divider, AppBar, Toolbar,
-  Checkbox, FormControlLabel
+  Checkbox, FormControlLabel, formErrors
 } from '@mui/material';
 import { LocationOn, Add, Remove, Phone, WhatsApp, Person, Category, Language } from '@mui/icons-material';
 import Image from 'next/image';
@@ -57,6 +57,18 @@ const AidPost = ({
    catch  {
     items = item_description.split(',').map(item => ({ name: item.trim(), quantity: 1 }));
   }
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.isAnonymous && !formData.firstName) errors.firstName = 'First name is required';
+    if (!formData.isAnonymous && !formData.lastName) errors.lastName = 'Last name is required';
+    if (!formData.phoneNumber) errors.phoneNumber = 'Phone number is required';
+    if (!formData.location) errors.location = 'Location is required';
+    if (!formData.category) errors.category = 'Category is required';
+    if (formData.category === 'Other' && !formData.otherCategory) errors.otherCategory = 'Please specify the category';
+    if (formData.items.length === 0) errors.items = 'Please add at least one item';
+    return errors;
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -190,8 +202,13 @@ const PostForm = ({ onSubmit, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSubmit(formData);
-    onClose();
+    const errors = validateForm();
+    if (Object.keys(errors).length === 0) {
+      await onSubmit(formData);
+      onClose();
+    } else {
+      setFormErrors(errors);
+    }
   };
 
   const handleChange = (e) => {
@@ -200,8 +217,11 @@ const PostForm = ({ onSubmit, onClose }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Clear the error for this field if it exists
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
-
 
   const addItem = () => {
     setFormData(prev => ({
@@ -238,6 +258,8 @@ const PostForm = ({ onSubmit, onClose }) => {
             value={formData.firstName}
             onChange={handleChange}
             required={!formData.isAnonymous}
+            error={!!formErrors.firstName}
+            helperText={formErrors.firstName}
           />
           <TextField
             fullWidth
@@ -247,6 +269,8 @@ const PostForm = ({ onSubmit, onClose }) => {
             value={formData.lastName}
             onChange={handleChange}
             required={!formData.isAnonymous}
+            error={!!formErrors.lastName}
+            helperText={formErrors.lastName}
           />
         </>
       )}
@@ -258,6 +282,8 @@ const PostForm = ({ onSubmit, onClose }) => {
         value={formData.phoneNumber}
         onChange={handleChange}
         required
+        error={!!formErrors.phoneNumber}
+        helperText={formErrors.phoneNumber}
       />
       <TextField
         fullWidth
@@ -268,8 +294,10 @@ const PostForm = ({ onSubmit, onClose }) => {
         value={formData.location}
         onChange={handleChange}
         required
+        error={!!formErrors.location}
+        helperText={formErrors.location}
       />
-      <FormControl fullWidth margin="normal">
+      <FormControl fullWidth margin="normal" error={!!formErrors.category}>
         <InputLabel>Category</InputLabel>
         <Select
           name="category"
@@ -281,6 +309,7 @@ const PostForm = ({ onSubmit, onClose }) => {
             <MenuItem key={category} value={category}>{category}</MenuItem>
           ))}
         </Select>
+        {formErrors.category && <FormHelperText>{formErrors.category}</FormHelperText>}
       </FormControl>
       {formData.category === 'Other' && (
         <TextField
@@ -291,6 +320,8 @@ const PostForm = ({ onSubmit, onClose }) => {
           value={formData.otherCategory}
           onChange={handleChange}
           required
+          error={!!formErrors.otherCategory}
+          helperText={formErrors.otherCategory}
         />
       )}
       {formData.category && (
@@ -325,6 +356,11 @@ const PostForm = ({ onSubmit, onClose }) => {
           <Button startIcon={<Add />} onClick={addItem} sx={{ mt: 1 }}>
             Add Item
           </Button>
+          {formErrors.items && (
+            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+              {formErrors.items}
+            </Typography>
+          )}
         </>
       )}
       <FormControlLabel
@@ -364,6 +400,7 @@ const LebanonAidWebsite = () => {
     const { data, error } = await supabase
       .from('aid_posts')
       .select('*')
+      .eq('is_approved', true)  // Only fetch approved posts
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -385,14 +422,16 @@ const LebanonAidWebsite = () => {
           category: formData.category === 'Other' ? formData.otherCategory : formData.category,
           item_description: JSON.stringify(formData.items),
           is_providing: tabValue === 0,
-          is_anonymous: formData.isAnonymous
+          is_anonymous: formData.isAnonymous,
+          is_approved: false  // New posts are not approved by default
         }
       ]);
     
     if (error) {
       console.error('Error submitting post:', error);
     } else {
-      fetchPosts();
+      // Don't fetch posts here, as the new post won't be approved yet
+      alert('Your post has been submitted for approval.');
     }
   };
 
