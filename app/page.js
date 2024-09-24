@@ -8,7 +8,8 @@ import {
   Button, Select, MenuItem, InputLabel, FormControl, 
   Card, CardContent, IconButton, List, ListItem, ListItemText,
   Fab, Dialog, DialogTitle, DialogContent, DialogActions,
-  Chip, OutlinedInput, Grid, Divider, AppBar, Toolbar
+  Chip, OutlinedInput, Grid, Divider, AppBar, Toolbar,
+  Checkbox, FormControlLabel
 } from '@mui/material';
 import { LocationOn, Add, Remove, Phone, WhatsApp, Person, Category, Language } from '@mui/icons-material';
 import Image from 'next/image';
@@ -164,8 +165,10 @@ const PostForm = ({ onSubmit, onClose }) => {
     location: '',
     category: '',
     otherCategory: '',
-    items: []
+    items: [],
+    isAnonymous: false
   });
+
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -192,9 +195,13 @@ const PostForm = ({ onSubmit, onClose }) => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
+
 
   const addItem = () => {
     setFormData(prev => ({
@@ -221,24 +228,28 @@ const PostForm = ({ onSubmit, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <TextField
-        fullWidth
-        margin="normal"
-        name="firstName"
-        label="First Name"
-        value={formData.firstName}
-        onChange={handleChange}
-        required
-      />
-      <TextField
-        fullWidth
-        margin="normal"
-        name="lastName"
-        label="Last Name"
-        value={formData.lastName}
-        onChange={handleChange}
-        required
-      />
+      {!formData.isAnonymous && (
+        <>
+          <TextField
+            fullWidth
+            margin="normal"
+            name="firstName"
+            label="First Name"
+            value={formData.firstName}
+            onChange={handleChange}
+            required={!formData.isAnonymous}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            name="lastName"
+            label="Last Name"
+            value={formData.lastName}
+            onChange={handleChange}
+            required={!formData.isAnonymous}
+          />
+        </>
+      )}
       <TextField
         fullWidth
         margin="normal"
@@ -316,6 +327,16 @@ const PostForm = ({ onSubmit, onClose }) => {
           </Button>
         </>
       )}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={formData.isAnonymous}
+            onChange={handleChange}
+            name="isAnonymous"
+          />
+        }
+        label="Post Anonymously"
+      />
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button type="submit" variant="contained" color="primary">
@@ -325,6 +346,7 @@ const PostForm = ({ onSubmit, onClose }) => {
     </form>
   );
 };
+
 
 const LebanonAidWebsite = () => {
   const [posts, setPosts] = useState([]);
@@ -356,13 +378,14 @@ const LebanonAidWebsite = () => {
       .from('aid_posts')
       .insert([
         {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
+          first_name: formData.isAnonymous ? 'Anonymous' : formData.firstName,
+          last_name: formData.isAnonymous ? '' : formData.lastName,
           phone_number: formData.phoneNumber,
           location: formData.location,
           category: formData.category === 'Other' ? formData.otherCategory : formData.category,
           item_description: JSON.stringify(formData.items),
-          is_providing: tabValue === 0
+          is_providing: tabValue === 0,
+          is_anonymous: formData.isAnonymous
         }
       ]);
     
