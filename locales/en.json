@@ -1,0 +1,19 @@
+{
+    "appTitle": "Lebanon Aid Website",
+    "provideAid": "Provide Aid",
+    "requestAid": "Request Aid",
+    "searchItems": "Search Items",
+    "filterCategories": "Filter Categories",
+    "availableAid": "Available Aid",
+    "aidRequests": "Aid Requests",
+    "callUs": "Call Us",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "location": "Location",
+    "category": "Category",
+    "items": "Items",
+    "addItem": "Add Item",
+    "cancel": "Cancel",
+    "submit": "Submit"
+  }

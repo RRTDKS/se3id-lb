@@ -1,0 +1,19 @@
+{
+    "appTitle": "موقع المساعدات اللبناني",
+    "provideAid": "تقديم المساعدة",
+    "requestAid": "طلب المساعدة",
+    "searchItems": "البحث عن العناصر",
+    "filterCategories": "تصفية الفئات",
+    "availableAid": "المساعدات المتاحة",
+    "aidRequests": "طلبات المساعدة",
+    "callUs": "اتصل بنا",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "phoneNumber": "رقم الهاتف",
+    "location": "الموقع",
+    "category": "الفئة",
+    "items": "العناصر",
+    "addItem": "إضافة عنصر",
+    "cancel": "إلغاء",
+    "submit": "إرسال"
+  }
