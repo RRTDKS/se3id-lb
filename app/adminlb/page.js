@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
   Container, Typography, Button, TextField, Box, Card, CardContent,
-  List, ListItem, ListItemText, Divider
+  List, ListItem, ListItemText, Divider, Checkbox, FormControlLabel,
+  IconButton, CircularProgress
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -16,6 +18,8 @@ const AdminPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [posts, setPosts] = useState([]);
+  const [showUnapprovedOnly, setShowUnapprovedOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,16 +28,24 @@ const AdminPage = () => {
   }, [isAuthenticated]);
 
   const fetchPosts = async () => {
-    const { data, error } = await supabase
+    setIsLoading(true);
+    let query = supabase
       .from('aid_posts')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (showUnapprovedOnly) {
+      query = query.eq('is_approved', false);
+    }
+
+    const { data, error } = await query;
     
     if (error) {
       console.error('Error fetching posts:', error);
     } else if (data) {
       setPosts(data);
     }
+    setIsLoading(false);
   };
 
   const handleLogin = (e) => {
@@ -87,6 +99,15 @@ const AdminPage = () => {
     }
   };
 
+  const handleRefresh = () => {
+    fetchPosts();
+  };
+
+  const handleShowUnapprovedToggle = (event) => {
+    setShowUnapprovedOnly(event.target.checked);
+    fetchPosts();
+  };
+
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
@@ -123,58 +144,78 @@ const AdminPage = () => {
     <Container maxWidth="md">
       <Box mt={4}>
         <Typography variant="h4" gutterBottom>Admin Dashboard</Typography>
-        <List>
-          {posts.map((post) => (
-            <React.Fragment key={post.id}>
-              <ListItem>
-                <Card sx={{ width: '100%' }}>
-                  <CardContent>
-                    <Typography variant="h6">{post.first_name} {post.last_name}</Typography>
-                    <Typography color="textSecondary">Phone: {post.phone_number}</Typography>
-                    <Typography color="textSecondary">Location: {post.location}</Typography>
-                    <Typography color="textSecondary">Category: {post.category}</Typography>
-                    <Typography color="textSecondary">
-                      Items: {JSON.parse(post.item_description).map(item => `${item.name} (${item.quantity})`).join(', ')}
-                    </Typography>
-                    <Typography color="textSecondary">
-                      {post.is_providing ? 'Providing Aid' : 'Requesting Aid'}
-                    </Typography>
-                    
-                    {post.is_approved ? (
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showUnapprovedOnly}
+                onChange={handleShowUnapprovedToggle}
+              />
+            }
+            label="Show All"
+          />
+          <IconButton onClick={handleRefresh} disabled={isLoading}>
+            <RefreshIcon />
+          </IconButton>
+        </Box>
+        {isLoading ? (
+          <Box display="flex" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <List>
+            {posts.map((post) => (
+              <React.Fragment key={post.id}>
+                <ListItem>
+                  <Card sx={{ width: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6">{post.first_name} {post.last_name}</Typography>
+                      <Typography color="textSecondary">Phone: {post.phone_number}</Typography>
+                      <Typography color="textSecondary">Location: {post.location}</Typography>
+                      <Typography color="textSecondary">Category: {post.category}</Typography>
+                      <Typography color="textSecondary">
+                        Items: {JSON.parse(post.item_description).map(item => `${item.name} (${item.quantity})`).join(', ')}
+                      </Typography>
+                      <Typography color="textSecondary">
+                        {post.is_providing ? 'Providing Aid' : 'Requesting Aid'}
+                      </Typography>
+                      
+                      {post.is_approved ? (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => handleDisapprove(post.id)}
+                          sx={{ mt: 2, mr: 2 }}
+                        >
+                          Disapprove
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleApprove(post.id)}
+                          sx={{ mt: 2, mr: 2 }}
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      
                       <Button
                         variant="contained"
-                        color="secondary"
-                        onClick={() => handleDisapprove(post.id)}
-                        sx={{ mt: 2, mr: 2 }}
+                        color="error"
+                        onClick={() => handleDelete(post.id)}
+                        sx={{ mt: 2 }}
                       >
-                        Disapprove
+                        Delete
                       </Button>
-                    ) : (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleApprove(post.id)}
-                        sx={{ mt: 2, mr: 2 }}
-                      >
-                        Approve
-                      </Button>
-                    )}
-                    
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => handleDelete(post.id)}
-                      sx={{ mt: 2 }}
-                    >
-                      Delete
-                    </Button>
-                  </CardContent>
-                </Card>
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
+                    </CardContent>
+                  </Card>
+                </ListItem>
+                <Divider />
+              </React.Fragment>
+            ))}
+          </List>
+        )}
       </Box>
     </Container>
   );
