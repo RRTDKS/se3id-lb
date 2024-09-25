@@ -684,7 +684,6 @@ const LebanonAidWebsite = () => {
 			}
 		])
 
-		setLoading(false)
 		if (error) {
 			console.error('Error submitting post:', error)
 			setSnackbar({
@@ -693,14 +692,31 @@ const LebanonAidWebsite = () => {
 				severity: 'error'
 			})
 		} else {
+			// Send email notification
+			try {
+				const response = await fetch('/api/notify-new-post', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(formData)
+				})
+
+				if (!response.ok) {
+					console.error('Failed to send email notification')
+				}
+			} catch (emailError) {
+				console.error('Error sending email notification:', emailError)
+			}
+
 			setSnackbar({
 				open: true,
 				message: intl.formatMessage({ id: 'postSubmittedForApproval' }),
 				severity: 'success'
 			})
 		}
+		setLoading(false)
 	}
-
 	const handleRedeem = async postId => {
 		const { error } = await supabase
 			.from('aid_posts')
