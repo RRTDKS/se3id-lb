@@ -312,7 +312,7 @@ const AdminPage = () => {
 				<CssBaseline />
 				<Container maxWidth='sm'>
 					<Box mt={4} textAlign='center'>
-						<Image src='/logo.png' alt='Logo' width={100} height={100} />
+						<Image src='/qwerty-logo.png' alt='Logo' width={100} height={100} />
 						<Typography variant='h4' gutterBottom>
 							Admin Login
 						</Typography>
