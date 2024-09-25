@@ -26,7 +26,7 @@ export async function POST(request) {
 		// Define email options
 		const mailOptions = {
 			from: process.env.EMAIL_USER,
-			to: 'asif@notqwerty.com',
+			to: 'ryan@notqwerty.com',
 			subject: 'New Aid Post Submission',
 			html: `
         <h1>New Aid Post Submission</h1>
