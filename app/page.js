@@ -322,29 +322,6 @@ const AidPost = ({
 								</Button>
 							</Box>
 						</Grid>
-						{!is_redeemed && (
-							<Grid item xs={12}>
-								<Button
-									fullWidth
-									variant='outlined'
-									color='secondary'
-									startIcon={<Check className='mx-2' />}
-									onClick={() => onRedeem(id)}>
-									{intl.formatMessage({ id: 'markAsRedeemed' })}
-								</Button>
-							</Grid>
-						)}
-						{is_redeemed && (
-							<Grid item xs={12}>
-								<Chip
-									icon={<Check className='mx-2' />}
-									label={intl.formatMessage({ id: 'redeemed' })}
-									color='success'
-									variant='outlined'
-									sx={{ width: '100%' }}
-								/>
-							</Grid>
-						)}
 					</Grid>
 				</CardContent>
 			</GlassCard>
@@ -575,7 +552,7 @@ const LebanonAidWebsite = () => {
 		message: '',
 		severity: 'info'
 	})
-	const [stats, setStats] = useState({ total: 0, redeemed: 0 })
+	const [stats, setStats] = useState({ total: 0})
 
 	const theme = useMemo(
 		() =>
@@ -717,6 +694,8 @@ const LebanonAidWebsite = () => {
 		}
 		setLoading(false)
 	}
+
+  
 	const handleRedeem = async postId => {
 		const { error } = await supabase
 			.from('aid_posts')
@@ -849,36 +828,6 @@ const LebanonAidWebsite = () => {
 							</Typography>
 						</Box>
 
-						<Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-							<Paper
-								elevation={3}
-								sx={{
-									p: 2,
-									borderRadius: 4,
-									backdropFilter: 'blur(10px)',
-									backgroundColor: 'rgba(255,255,255,0.7)'
-								}}>
-								<Grid container spacing={2} alignItems='center'>
-									<Grid item>
-										<Typography variant='h6'>
-											<FormattedMessage id='totalPosts' />: {stats.total}
-										</Typography>
-									</Grid>
-									<Grid item>
-										<Typography variant='h6'>
-											<FormattedMessage id='redeemedPosts' />: {stats.redeemed}
-										</Typography>
-									</Grid>
-									<Grid item xs>
-										<LinearProgress
-											variant='determinate'
-											value={(stats.redeemed / stats.total) * 100}
-											sx={{ height: 10, borderRadius: 5 }}
-										/>
-									</Grid>
-								</Grid>
-							</Paper>
-						</Box>
 
 						<Tabs
 							value={tabValue}
@@ -1062,7 +1011,6 @@ const LebanonAidWebsite = () => {
 								</Grid>
 								<Grid item xs={12} sm={6} md={3}>
 									<Typography variant='h6' color='text.primary' gutterBottom>
-										<FormattedMessage id='followUs' />
 									</Typography>
 									<Box>
 										<StyledLink
