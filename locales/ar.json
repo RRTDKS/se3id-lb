@@ -34,6 +34,7 @@
 	"markAsRedeemed": "وضع علامة كمسترد",
 	"redeemed": "مسترد",
 	"quantity": "الكمية",
+	"urgent":"عاجل",
 	"postAnonymously": "نشر بشكل مجهول",
 	"errorFetchingPosts": "خطأ في جلب المنشورات. يرجى المحاولة مرة أخرى.",
 	"errorSubmittingPost": "خطأ في إرسال المنشور. يرجى المحاولة مرة أخرى.",

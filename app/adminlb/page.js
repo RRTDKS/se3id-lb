@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
 	Container,
+	Switch,
 	Typography,
 	Button,
 	TextField,
@@ -174,6 +175,29 @@ const AdminPage = () => {
 			const total = data.length
 			const approved = data.filter(post => post.is_approved).length
 			setStats({ total, approved, unapproved: total - approved })
+		}
+	}
+
+	const handleUrgentToggle = async (postId, isUrgent) => {
+		const { error } = await supabase
+			.from('aid_posts')
+			.update({ is_urgent: isUrgent })
+			.eq('id', postId)
+
+		if (error) {
+			console.error('Error updating urgent status:', error)
+			setSnackbar({
+				open: true,
+				message: 'Error updating urgent status. Please try again.',
+				severity: 'error'
+			})
+		} else {
+			fetchPosts()
+			setSnackbar({
+				open: true,
+				message: `Post ${isUrgent ? 'marked' : 'unmarked'} as urgent successfully`,
+				severity: 'success'
+			})
 		}
 	}
 
@@ -538,7 +562,16 @@ const AdminPage = () => {
 															)}
 														</Typography>
 													</Grid>
+
 													<Grid item xs={12}>
+													<Typography color='text.secondary'>
+														Urgent:{' '}
+														<Switch
+															checked={post.is_urgent || false}
+															onChange={(e) => handleUrgentToggle(post.id, e.target.checked)}
+															color='error'
+														/>
+													</Typography>
 														<Box
 															sx={{
 																display: 'flex',
