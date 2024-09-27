@@ -994,7 +994,7 @@ const LebanonAidWebsite = () => {
                     justifyContent='center'
                     alignItems='center'>
                     <Image
-                      src='/qwerty-logo.png'
+                      src='/qwerty(NoBG).png'
                       alt='qwerty Logo'
                       width={100}
                       height={100}
